@@ -167,6 +167,19 @@ LANGCHAIN_API_KEY="lsv2_..."
 LANGCHAIN_PROJECT="AI Call Center Assistant"
 ```
 
+### Streamlit Cloud Deployment
+
+When deploying to Streamlit Cloud, do not use a `.env` file. Instead, add your keys to **Streamlit Secrets** (Settings > Secrets):
+
+```toml
+OPENAI_API_KEY = "sk-..."
+LANGCHAIN_TRACING_V2 = "true"
+LANGCHAIN_API_KEY = "lsv2_..."
+LANGCHAIN_PROJECT = "AI Call Center Assistant"
+```
+
+The application automatically syncs these secrets to environment variables on startup.
+
 ### Run the Application
 
 ```bash

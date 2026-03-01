@@ -13,6 +13,20 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+# Sync Streamlit Secrets to Environment Variables
+def sync_secrets_to_env():
+    """Syncs Streamlit secrets to os.environ for compatibility with downstream agents."""
+    try:
+        for key, value in st.secrets.items():
+            if key not in os.environ or not os.environ[key]:
+                os.environ[key] = str(value)
+                # logger.debug(f"Synced secret {key} to environment.")
+    except Exception:
+        # st.secrets is not available in local dev unless .streamlit/secrets.toml exists
+        pass
+
+sync_secrets_to_env()
+
 # Page Configuration
 st.set_page_config(
     page_title="AI Call Center Assistant",
