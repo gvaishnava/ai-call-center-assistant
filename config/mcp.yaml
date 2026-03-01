@@ -1,0 +1,22 @@
+# Model Control Plane (MCP) Configuration
+
+routing:
+  default_model: "gpt-4o"
+  fallback_model: "gpt-3.5-turbo" # Or any other available model
+  max_retries: 3
+
+agents:
+  intake:
+    validation_mode: "strict"
+  transcription:
+    model: "base" # Whisper model size
+  summarization:
+    max_tokens: 500
+  quality_scoring:
+    rubric_version: "1.0"
+
+environments:
+  dev:
+    log_level: "DEBUG"
+  prod:
+    log_level: "INFO"

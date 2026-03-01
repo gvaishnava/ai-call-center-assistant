@@ -1,0 +1,12 @@
+[
+  {
+    "customer": "Sarah Jenkins",
+    "agent": "Mark Thompson",
+    "transcript": "Agent: Thank you for calling TechSupport, this is Mark. How can I help you today?\nCustomer: Hi Mark, my internet has been cutting out every 15 minutes. It's really frustrating as I'm working from home.\nAgent: I'm very sorry to hear that, Sarah. I understand how important a stable connection is for work. Let me check your signal levels from here.\nCustomer: Okay, thanks.\nAgent: I see some fluctuations in your modem upstream Power. This usually points to a loose cable or a faulty splitter. Have you checked the physical connections recently?\nCustomer: I haven't, actually. Let me look... Oh, the screw-on cable at the back of the modem feels a bit loose.\nAgent: Try tightening that, and let me know if the 'Online' light stays steady.\nCustomer: Okay, it's tight now. The light is solid green.\nAgent: Great! I'll monitor it for a few minutes. If it stays stable, we're good. If not, I'll schedule a technician to replace the splitter.\nCustomer: It seems to be holding up. Thank you for being so patient, Mark.\nAgent: You're very welcome, Sarah. Is there anything else I can assist with?\nCustomer: No, that's all. Have a great day.\nAgent: You too, goodbye."
+  },
+  {
+    "customer": "David Miller",
+    "agent": "Sarah Lee",
+    "transcript": "Agent: Hello, this is Sarah from Billing. How can I assist you?\nCustomer: I'm looking at my bill and there's a $50 charge I don't recognize. I never authorized this.\nAgent: Let me pull up your account, Mr. Miller. One moment please... I see the charge here. It's for a premium channel pack added last Tuesday.\nCustomer: Well, I didn't add it! This is ridiculous.\nAgent: I apologize for the confusion. It looks like it might have been added during a promotional call last month. I will remove the charge immediately and issue a credit to your next bill.\nCustomer: Thank you. I appreciate the quick fix.\nAgent: Of course. The credit should appear within 24 hours. Anything else?\nCustomer: No, that's fine."
+  }
+]

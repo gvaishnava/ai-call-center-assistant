@@ -1,0 +1,49 @@
+{
+    "categories": {
+        "technical_score": {
+            "description": "Evaluates the agent's technical knowledge and ability to accurately diagnose and resolve the issue.",
+            "scoring": {
+                "1-3": "Failed to understand the issue, provided incorrect information, or could not resolve a basic technical problem.",
+                "4-6": "Understood the basic issue but required significant time or multiple attempts to find a solution. Provided mostly accurate but incomplete technical advice.",
+                "7-8": "Accurately diagnosed the issue and provided correct technical steps, resolving the problem efficiently.",
+                "9-10": "Demonstrated exceptional technical expertise, resolved the issue quickly, and proactively checked for other potential technical problems."
+            }
+        },
+        "professionalism_score": {
+            "description": "Evaluates the agent's professional demeanor, respectfulness, and representation of the company.",
+            "scoring": {
+                "1-3": "Unprofessional, rude, or dismissive. Used inappropriate language or tone.",
+                "4-6": "Generally polite but lacked formal professionalism. May have sounded bored or distracted.",
+                "7-8": "Maintained a professional, courteous, and respectful demeanor throughout the call.",
+                "9-10": "Extremely professional, built excellent rapport, and positively reinforced the company's brand."
+            }
+        },
+        "communication_score": {
+            "description": "Evaluates the clarity, conciseness, and effectiveness of the agent's communication.",
+            "scoring": {
+                "1-3": "Unclear, confusing, or used excessive jargon that the customer did not understand.",
+                "4-6": "Adequate communication but sometimes rambling or slightly difficult to follow.",
+                "7-8": "Clear, concise, and easy to understand. Used appropriate language for the customer's level of knowledge.",
+                "9-10": "Exceptional communication. Anticipated customer confusion and explained complex concepts simply and effectively."
+            }
+        },
+        "process_adherence_score": {
+            "description": "Evaluates whether the agent followed required company processes, security checks, and policies.",
+            "scoring": {
+                "1-3": "Ignored critical security checks (like account verification) or flagrantly violated company policy.",
+                "4-6": "Followed some processes but missed minor steps or took incorrect shortcuts.",
+                "7-8": "Followed all required processes and policies, including proper verification and documentation.",
+                "9-10": "Flawlessly executed all processes and went above and beyond to ensure full compliance and accurate record-keeping."
+            }
+        },
+        "soft_skills_score": {
+            "description": "Evaluates the agent's empathy, active listening, and ability to handle customer emotions.",
+            "scoring": {
+                "1-3": "Lacked empathy, ignored customer frustration, or interrupted frequently.",
+                "4-6": "Listened but responded mechanically. Showed minimal empathy for the customer's situation.",
+                "7-8": "Demonstrated empathy, actively listened, and effectively de-escalated mild frustration.",
+                "9-10": "Exceptional empathy and active listening. Successfully turned a highly negative customer experience into a positive one through emotional intelligence."
+            }
+        }
+    }
+}
