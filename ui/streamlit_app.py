@@ -195,13 +195,49 @@ elif input_mode == "Live Call (WebRTC)":
     current_recorder = st.session_state.recorder
     current_resampler = st.session_state.resampler
 
+    turn_username = os.environ.get("TURN_USERNAME")
+    turn_credential = os.environ.get("TURN_CREDENTIAL")
+
     webrtc_ctx = webrtc_streamer(
         key="live_call",
         mode=WebRtcMode.SENDONLY,
         audio_processor_factory=lambda: STTAudioProcessor(current_recorder, current_resampler),
         media_stream_constraints={"video": False, "audio": True},
         rtc_configuration={
-            "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+            "iceServers": [
+                {"urls": ["stun:stun.l.google.com:19302"]},
+                {"urls": ["stun:stun.l.google.com:5349"]},
+                {"urls": ["stun:stun1.l.google.com:3478"]},
+                {"urls": ["stun:stun1.l.google.com:5349"]},
+                {"urls": ["stun:stun2.l.google.com:19302"]},
+                {"urls": ["stun:stun2.l.google.com:5349"]},
+                {"urls": ["stun:stun3.l.google.com:3478"]},
+                {"urls": ["stun:stun3.l.google.com:5349"]},
+                {"urls": ["stun:stun4.l.google.com:19302"]},
+                {"urls": ["stun:stun4.l.google.com:5349"]},
+                # Metered.ca TURN servers
+                {"urls": ["stun:stun.relay.metered.ca:80"]},
+                {
+                    "urls": ["turn:global.relay.metered.ca:80"],
+                    "username": turn_username,
+                    "credential": turn_credential,
+                },
+                {
+                    "urls": ["turn:global.relay.metered.ca:80?transport=tcp"],
+                    "username": turn_username,
+                    "credential": turn_credential,
+                },
+                {
+                    "urls": ["turn:global.relay.metered.ca:443"],
+                    "username": turn_username,
+                    "credential": turn_credential,
+                },
+                {
+                    "urls": ["turns:global.relay.metered.ca:443?transport=tcp"],
+                    "username": turn_username,
+                    "credential": turn_credential,
+                },
+            ]
         }
     )
     
