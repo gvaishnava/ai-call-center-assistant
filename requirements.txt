@@ -1,13 +1,17 @@
+# Core Frameworks
+streamlit
+streamlit-webrtc
+
+# AI & Logic
 langchain
 langchain-openai
+langchain-community
 langgraph
 pydantic
-streamlit
-openai
-python-dotenv
-pydub
-langchain-community
 openai
 langsmith
-streamlit-webrtc
+python-dotenv
+
+# Audio Processing
+pydub
 RealtimeSTT
