@@ -9,7 +9,7 @@ An end-to-end **Agentic AI** system that transforms raw call center data — aud
 The AI Call Center Assistant automatically performs the following on every call:
 
 1. **Validates & registers** call metadata (customer, agent, timestamp)
-2. **Transcribes** audio to text (via OpenAI Whisper) or accepts text directly
+2. **Transcribes** audio to text (via OpenAI Whisper API for files, or local `RealtimeSTT` for Live WebRTC Calls) or accepts text directly
 3. **Summarizes** the conversation into key points, sentiment, and action items
 4. **Quality scores** the agent's performance against a structured rubric
 5. **Detects sentiment & churn risk** from the customer's behavior
@@ -29,7 +29,7 @@ User Input (Text / Audio)
              │
              ▼
 ┌─────────────────────────┐
-│   Transcription Agent   │   Whisper API (audio) or passthrough (text)
+│   Transcription Agent   │   Whisper API (audio files), RealtimeSTT (Live Call), or passthrough (text)
 └────────────┬────────────┘
              │
         ┌────┴────┐
@@ -57,9 +57,10 @@ All agents are connected via a **LangGraph StateGraph** with full `async/await` 
 - Returns a structured `CallMetadata` object
 
 ### 2. `TranscriptionAgent` — `agents/transcription_agent.py`
-- **Audio mode**: Calls OpenAI `whisper-1` via `AsyncOpenAI` for speech-to-text
+- **Live Call (WebRTC)**: Uses `streamlit-webrtc` and `RealtimeSTT` (local, free Whisper `tiny.en` or `base.en` models) to capture and transcribe browser microphone audio instantly via true multi-threading.
+- **Audio File mode**: Calls OpenAI `whisper-1` via `AsyncOpenAI` for fast file-based speech-to-text.
 - **Text mode**: Directly wraps provided text into a `TranscriptionResult`
-- Client wrapped with **LangSmith** `wrap_openai` for full trace visibility
+- Cloud API calls are wrapped with **LangSmith** `wrap_openai` for full trace visibility
 
 ### 3. `SummarizationAgent` — `agents/summarization_agent.py`
 - Uses `gpt-4o` with a structured prompt via LangChain
@@ -94,7 +95,8 @@ All agents are connected via a **LangGraph StateGraph** with full `async/await` 
 
 **Streamlit** (`ui/streamlit_app.py`) provides an interactive web dashboard:
 
-- Choose input mode: **Text Transcript** or **Audio File upload (WAV/MP3/M4A)**
+- Choose input mode: **Text Transcript**, **Audio File upload (WAV/MP3/M4A)**, or **Live Call (WebRTC)**
+- **Live Call** mode streams browser audio via true multi-threaded `AudioProcessorBase` into a local Whisper engine, updating text on the screen word-by-word with zero text loss.
 - Enter customer and agent names
 - Click **Generate Insights** to run the full pipeline
 - View results:
@@ -137,6 +139,7 @@ The system integrates **LangSmith** for full trace visibility into every call pr
 - Python 3.10+
 - OpenAI API Key
 - LangSmith API Key *(optional, for tracing)*
+- System Packages: `ffmpeg` and `portaudio19-dev` (Linux) for microphone/audio processing.
 
 ### Installation
 
@@ -207,6 +210,14 @@ Sample validation questions include:
 - *"Is the churn_risk_detected correctly identified based on the customer's behavior?"*
 - *"Did the quality score professionalism_score exceed 6?"*
 
+### Real-Time Audio Testing
+
+To mathematically verify that the WebRTC background threads are lossless, a direct STT pipeline test is provided.
+```bash
+python tests/test_realtime_stt.py
+```
+This script bypasses Streamlit and chunks a standard WAV file into 100ms segments, simulating exactly how the browser sends audio, proving that the local VAD and threading implementation does not drop frames.
+
 ---
 
 ## 📁 Project Structure
@@ -250,6 +261,8 @@ AI Call Center Assistant/
 | `langsmith` | Tracing, monitoring & evaluation |
 | `pydantic` | Structured data validation |
 | `streamlit` | Web UI |
+| `streamlit-webrtc`, `tornado` | WebRTC live browser audio capture |
+| `RealtimeSTT`, `pydub` | Local, word-by-word live transcription via `faster-whisper` |
 | `python-dotenv` | Environment variable management |
 
 ---
