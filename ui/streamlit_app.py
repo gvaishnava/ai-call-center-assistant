@@ -1,9 +1,19 @@
 import streamlit as st
 import os
 import sys
+import queue
+import time
+import threading
+import av
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, AudioProcessorBase
+try:
+    from RealtimeSTT import AudioToTextRecorder
+except ImportError:
+    AudioToTextRecorder = None
 
 from agents.routing_agent import RoutingAgent
 import json
@@ -111,14 +121,142 @@ with col1:
 
 with col2:
     st.markdown("### Input Mode")
-    input_mode = st.radio("Choose Input Method", ["Text Transcript", "Audio File (Whisper)"])
+    input_mode = st.radio("Choose Input Method", ["Text Transcript", "Audio File (Whisper)", "Live Call (WebRTC)"])
 
 if input_mode == "Text Transcript":
     transcript_text = st.text_area("Paste Transcript Here", height=200, 
                                 placeholder="Customer: ... \nAgent: ...")
-else:
+elif input_mode == "Audio File (Whisper)":
     uploaded_file = st.file_uploader("Upload Audio", type=["wav", "mp3", "m4a"])
     transcript_text = None
+elif input_mode == "Live Call (WebRTC)":
+    st.markdown("### Start Live Call")
+    
+    if "live_transcript" not in st.session_state:
+        st.session_state.live_transcript = ""
+    if "current_realtime" not in st.session_state:
+        st.session_state.current_realtime = ""
+    if "text_queue" not in st.session_state:
+        st.session_state.text_queue = queue.Queue()
+    if "realtime_queue" not in st.session_state:
+        st.session_state.realtime_queue = queue.Queue()
+        
+    text_queue = st.session_state.text_queue
+    realtime_queue = st.session_state.realtime_queue
+
+    if "resampler" not in st.session_state:
+        st.session_state.resampler = av.AudioResampler(format='s16', layout='mono', rate=16000)
+
+    if "recorder" not in st.session_state:
+        with st.spinner("Loading speech model (this takes a moment the first time)..."):
+            if AudioToTextRecorder is None:
+                st.error("RealtimeSTT not found. Please install it.")
+                st.stop()
+                
+            def on_realtime_update(text):
+                if text.strip():
+                    realtime_queue.put(text)
+                    
+            recorder = AudioToTextRecorder(
+                use_microphone=False, 
+                model="base.en", 
+                spinner=False, 
+                language="en",
+                enable_realtime_transcription=True,
+                on_realtime_transcription_update=on_realtime_update,
+                realtime_processing_pause=0.2, # Ease CPU load
+                post_speech_silence_duration=2.0 # Prevent premature cutoffs
+            )
+            st.session_state.recorder = recorder
+            
+            def stt_worker():
+                while True:
+                    # recorder.text() blocks until silence is detected, then returns the finalized sentence
+                    text = recorder.text()
+                    if text and text.strip():
+                        text_queue.put(text)
+                        realtime_queue.put("")
+            
+            # Start STT processing in a background thread
+            t = threading.Thread(target=stt_worker, daemon=True)
+            t.start()
+
+    class STTAudioProcessor(AudioProcessorBase):
+        def __init__(self, recorder, resampler):
+            self.recorder = recorder
+            self.resampler = resampler
+
+        def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
+            resampled_frames = self.resampler.resample(frame)
+            for resampled_frame in resampled_frames:
+                self.recorder.feed_audio(resampled_frame.to_ndarray().tobytes())
+            return frame
+
+    current_recorder = st.session_state.recorder
+    current_resampler = st.session_state.resampler
+
+    webrtc_ctx = webrtc_streamer(
+        key="live_call",
+        mode=WebRtcMode.SENDONLY,
+        audio_processor_factory=lambda: STTAudioProcessor(current_recorder, current_resampler),
+        media_stream_constraints={"video": False, "audio": True},
+        rtc_configuration={
+            "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+        }
+    )
+    
+    if webrtc_ctx.state.playing:
+        st.markdown("### Live Transcription")
+        transcript_container = st.empty()
+            
+        while webrtc_ctx.state.playing:
+            
+            # 2. Check for new transcribed text in the queue
+            while not text_queue.empty():
+                try:
+                    new_text = text_queue.get_nowait()
+                    st.session_state.live_transcript += new_text + " "
+                except queue.Empty:
+                    break
+                    
+            # 3. Check for real-time word updates
+            while not realtime_queue.empty():
+                try:
+                    st.session_state.current_realtime = realtime_queue.get_nowait()
+                except queue.Empty:
+                    break
+                
+            # Update UI
+            display_text = st.session_state.live_transcript
+            if st.session_state.current_realtime:
+                display_text += f" *{st.session_state.current_realtime}*"
+                
+            transcript_container.info(display_text if display_text else "Listening...")
+            # Yield to Streamlit
+            time.sleep(0.1)
+
+    # Flush any remaining finalized text from the queue after stopping
+    if not webrtc_ctx.state.playing:
+        if "text_queue" in st.session_state:
+            while not st.session_state.text_queue.empty():
+                try:
+                    st.session_state.live_transcript += st.session_state.text_queue.get_nowait() + " "
+                except queue.Empty:
+                    break
+                    
+        # Append any unfinalized text that was cut off when stopping
+        if "current_realtime" in st.session_state and st.session_state.current_realtime:
+            st.session_state.live_transcript += st.session_state.current_realtime + " "
+            st.session_state.current_realtime = ""
+
+    if st.session_state.live_transcript:
+        st.markdown("### Recorded Transcript")
+        st.success(st.session_state.live_transcript)
+        if st.button("Clear Transcript"):
+            st.session_state.live_transcript = ""
+            st.rerun()
+            
+    transcript_text = st.session_state.get("live_transcript", "")
 
 # Process Button
 if st.button("Generate Insights"):
@@ -126,6 +264,8 @@ if st.button("Generate Insights"):
         st.error("Please provide a transcript.")
     elif input_mode == "Audio File (Whisper)" and not uploaded_file:
         st.error("Please upload an audio file.")
+    elif input_mode == "Live Call (WebRTC)" and not transcript_text:
+        st.error("Please record a live call first.")
     else:
         with st.spinner("🤖 Agents are working on the analysis..."):
             # Prepare input
@@ -135,7 +275,7 @@ if st.button("Generate Insights"):
                 "agent_name": agent_name
             }
             
-            if input_mode == "Text Transcript":
+            if input_mode in ["Text Transcript", "Live Call (WebRTC)"]:
                 raw_input["text"] = transcript_text
             else:
                 # Save audio temporarily

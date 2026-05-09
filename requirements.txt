@@ -9,3 +9,5 @@ pydub
 langchain-community
 openai
 langsmith
+streamlit-webrtc
+RealtimeSTT
