@@ -159,7 +159,7 @@ elif input_mode == "Live Call (WebRTC)":
                     
             recorder = AudioToTextRecorder(
                 use_microphone=False, 
-                model="base.en", 
+                model="tiny.en", 
                 spinner=False, 
                 language="en",
                 enable_realtime_transcription=True,

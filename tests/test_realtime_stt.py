@@ -37,7 +37,7 @@ def stream_wav_file(wav_path, chunk_duration_ms=100):
     print("Initializing Model...")
     recorder = AudioToTextRecorder(
         use_microphone=False,
-        model="base.en",
+        model="tiny.en",
         spinner=False,
         language="en",
         enable_realtime_transcription=True,

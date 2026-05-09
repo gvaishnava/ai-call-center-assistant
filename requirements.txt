@@ -1,6 +1,7 @@
 # Core Frameworks
 streamlit
 streamlit-webrtc
+tornado
 
 # AI & Logic
 langchain
