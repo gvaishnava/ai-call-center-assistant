@@ -16,3 +16,4 @@ python-dotenv
 # Audio Processing
 pydub
 RealtimeSTT
+av

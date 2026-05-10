@@ -158,6 +158,16 @@ elif input_mode == "Live Call (WebRTC)":
                     realtime_queue.put(text)
                     
             start_t = time.time()
+            
+            # Trust Silero VAD repository for non-interactive environments (Hugging Face / Streamlit Cloud)
+            try:
+                import torch
+                import torch.hub
+                _orig_load = torch.hub.load
+                torch.hub.load = lambda *a, **kw: _orig_load(*a, **{**kw, "trust_repo": True})
+            except Exception:
+                _orig_load = None
+
             recorder = AudioToTextRecorder(
                 use_microphone=False, 
                 model="tiny.en", 
@@ -169,6 +179,12 @@ elif input_mode == "Live Call (WebRTC)":
                 realtime_processing_pause=0.2, # Ease CPU load
                 post_speech_silence_duration=2.0 # Prevent premature cutoffs
             )
+            
+            # Restore original torch.hub.load
+            if _orig_load:
+                import torch.hub
+                torch.hub.load = _orig_load
+
             st.session_state.recorder = recorder
             end_t = time.time()
             st.toast(f"✅ STT Engine initialized in {end_t - start_t:.1f}s", icon="🚀")

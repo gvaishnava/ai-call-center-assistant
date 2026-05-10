@@ -1,3 +1,13 @@
+---
+title: AI Call Center Assistant
+emoji: 📞
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+app_file: ui/streamlit_app.py
+pinned: false
+---
+
 # 📞 AI Call Center Assistant
 
 An end-to-end **Agentic AI** system that transforms raw call center data — audio recordings or text transcripts — into structured insights using a **multi-agent LangGraph pipeline** powered by **GPT-4o**.
